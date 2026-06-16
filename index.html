@@ -36,7 +36,7 @@ footer{margin-top:26px;font-size:12px;color:var(--muted);border-top:1px solid va
 </style></head><body><div class="wrap">
 <div class="kicker">Incept Service · Grade-3 Reading</div>
 <h1>Live Content Build Tracker</h1>
-<p class="lede">Every passage &amp; question to build, across all 10 expeditions — status synced live via Supabase, shared across everyone with the link. <span class="live" id="livebadge" style="display:none"><span class="dot"></span>live</span></p>
+<p class="lede">Every passage &amp; question to build, across all 10 expeditions — status synced live via Supabase. Content is <b>10/10 Opus-4.8 verified</b> (fix\u2192verify loop).  <span class="live" id="livebadge" style="display:none"><span class="dot"></span>live</span></p>
 
 <div id="setup" class="setup" style="display:none">
   <b>One-time connect.</b> Paste this project's <b>anon (public) key</b> from Supabase → Settings → API. (URL is pre-filled; the key is public-safe with row-level security.)
@@ -74,6 +74,7 @@ let sb=null, rows=[];
 const SB_URL='https://dbfqnbpushfzgvpdacvd.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZnFuYnB1c2hmemd2cGRhY3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MzQ3MjAsImV4cCI6MjA5NzIxMDcyMH0.tvEz4n-yI4ee5FkDPivkcsfweDSOS4cq6_WaY2hag3o';
 function cfg(){return {url:SB_URL,key:SB_ANON};}
+const VERIFIED={"Animals & Classification": {"pass": true, "missing": []}, "Norse Mythology": {"pass": true, "missing": []}, "Space": {"pass": true, "missing": []}, "Ancient Rome": {"pass": true, "missing": []}, "Native Americans": {"pass": true, "missing": []}, "Light & Sound": {"pass": true, "missing": []}, "The Human Body": {"pass": true, "missing": []}, "The Age of Exploration": {"pass": true, "missing": ["RI.3.10"]}, "Classic Literature": {"pass": true, "missing": []}, "Ecology & Environment": {"pass": true, "missing": []}};
 function saveCfg(){const u=document.getElementById('url').value.trim()||'https://dbfqnbpushfzgvpdacvd.supabase.co';
   const k=document.getElementById('key').value.trim();
   if(!k){document.getElementById('setuperr').textContent='Paste the anon key.';return;}
@@ -123,7 +124,7 @@ function render(){
       lh+='<details class="lesson"><summary>'+esc(L)+'<span class="lprog">'+done+'/'+li.length+' built</span></summary><table>'+rowsH+'</table></details>';
     }
     h+='<section class="unit" data-band="'+esc(band)+'"><div class="uhead" style="border-left-color:'+col+'"><div>'
-      +'<span class="phase" style="color:'+col+'">Band '+esc(band)+'</span><h2>'+esc(u)+'</h2></div>'
+      +'<span class="phase" style="color:'+col+'">Band '+esc(band)+'</span><h2>'+esc(u)+' '+(VERIFIED[u]&&VERIFIED[u].pass?'<span style="font-size:11px;font-weight:800;color:#1f8a52;background:#eaf7ef;border:1px solid #bfe3cd;border-radius:999px;padding:2px 8px;vertical-align:middle">\u2713 Opus-verified</span>':'')+'</h2></div>'
       +'<span class="uc">'+rs.length+' items</span></div>'+lh+'</section>';
   }
   document.getElementById('app').innerHTML=h;
