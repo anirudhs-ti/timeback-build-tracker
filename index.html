@@ -1,0 +1,149 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grade-3 Reading — Live Build Tracker</title>
+<style>
+:root{--bg:#FBF8F3;--ink:#1E2A44;--teal:#1FA8A0;--coral:#F2785C;--amber:#F4B740;--muted:#5b6678;--line:#e7e0d4;--green:#1f8a52;--navy:#1E2A44}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.4}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 18px 90px}
+.kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);font-weight:700}
+h1{font-size:29px;margin:8px 0 4px}.lede{color:var(--muted);margin:0 0 14px;font-size:14px}
+.summary{position:sticky;top:0;z-index:9;background:rgba(251,248,243,.97);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-bottom:16px}
+.scards{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.sc{font-size:12px;color:var(--muted)}.sc b{display:block;font-size:21px;color:var(--ink)}
+.bar{flex:1;min-width:220px;height:14px;border-radius:7px;background:#eee;overflow:hidden;display:flex}.bar i{height:100%;transition:width .3s}.bg{background:var(--green)}.bw{background:var(--amber)}.bt{background:#d9d4c8}
+.fbtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--muted)}.fbtn.on{background:var(--ink);color:#fff}
+.live{font-size:11px;font-weight:700;color:var(--green)}.live .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:4px;animation:p 1.6s infinite}@keyframes p{50%{opacity:.3}}
+.unit{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:13px 0}
+.uhead{display:flex;justify-content:space-between;align-items:center;padding-left:10px;border-left:6px solid var(--teal)}
+.phase{font-size:11px;font-weight:800;text-transform:uppercase}h2{font-size:19px;margin:2px 0 0}.uc{font-size:12px;color:var(--muted)}
+details.lesson{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#fdfcf9}
+details.lesson>summary{cursor:pointer;padding:9px 12px;font-weight:700;font-size:14px;list-style:none}
+details.lesson>summary::-webkit-details-marker{display:none}
+.lprog{font-weight:400;font-size:11.5px;color:var(--muted);margin-left:8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+td{padding:6px 8px;border-bottom:1px solid #f1ece1;vertical-align:top}
+.phdr td{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#fff;padding:4px 9px}
+.ph-build td,.ph-i-do td{background:#1f8a52}.ph-we-do td,.ph-you-do td{background:#138079}.ph-check td{background:#33457e}.ph-gate td{background:#1E2A44}
+.ty{display:inline-block;font-size:9.5px;font-weight:800;color:#fff;border-radius:4px;padding:2px 6px}
+.std{display:inline-block;background:#eef7f6;color:#137068;border:1px solid #cfe9e6;font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px}
+select.st{font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:2px 5px;background:#fff}
+tr[data-st="built"]{background:#eaf7ef}tr[data-st="wip"]{background:#fdf6e7}tr[data-st="na"]{opacity:.45}
+.setup{background:#fdf1e3;border:1px solid #f0dca8;border-radius:12px;padding:16px;font-size:13.5px;color:#7a4a12}
+.setup code{background:#fff;border:1px solid #f0dca8;padding:1px 6px;border-radius:5px}
+.setup input{width:100%;padding:8px;border:1px solid var(--line);border-radius:7px;margin:5px 0;font-size:13px}
+.setup button{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer}
+footer{margin-top:26px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.err{color:var(--coral);font-size:13px}
+</style></head><body><div class="wrap">
+<div class="kicker">Incept Service · Grade-3 Reading</div>
+<h1>Live Content Build Tracker</h1>
+<p class="lede">Every passage &amp; question to build, across all 10 expeditions — status synced live via Supabase, shared across everyone with the link. <span class="live" id="livebadge" style="display:none"><span class="dot"></span>live</span></p>
+
+<div id="setup" class="setup" style="display:none">
+  <b>One-time connect.</b> Paste this project's <b>anon (public) key</b> from Supabase → Settings → API. (URL is pre-filled; the key is public-safe with row-level security.)
+  <input id="url" placeholder="https://dbfqnbpushfzgvpdacvd.supabase.co">
+  <input id="key" placeholder="anon public key (eyJ...)">
+  <button onclick="saveCfg()">Connect</button>
+  <div id="setuperr" class="err"></div>
+</div>
+
+<div class="summary" id="summary" style="display:none">
+  <div class="scards">
+    <div class="sc"><b id="nUnits">0</b>units</div>
+    <div class="sc"><b id="nItems">0</b>items</div>
+    <div class="sc"><b id="pct">0%</b>built</div>
+    <div class="bar"><i class="bg" id="b"></i><i class="bw" id="w"></i><i class="bt" id="t"></i></div>
+  </div>
+  <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" id="filters">
+    <button class="fbtn on" data-f="all" onclick="filt(this)">All</button>
+    <button class="fbtn" data-f="A · Hook" onclick="filt(this)">Band A</button>
+    <button class="fbtn" data-f="B · Bridge" onclick="filt(this)">Band B</button>
+    <button class="fbtn" data-f="C · Transfer" onclick="filt(this)">Band C</button>
+    <button class="fbtn" onclick="document.querySelectorAll('details.lesson').forEach(d=>d.open=true)">expand</button>
+    <button class="fbtn" onclick="document.querySelectorAll('details.lesson').forEach(d=>d.open=false)">collapse</button>
+  </div>
+</div>
+
+<div id="app"></div>
+<div id="loading" style="color:var(--muted);font-size:14px">Connecting…</div>
+<footer id="foot"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const TYPE_COLOR={article:'#0d7a8c',mcq:'#33457e',msq:'#1FA8A0','hot-text':'#b5781b',sequence:'#F2785C',match:'#6b3fa0',ebsr:'#1f8a52',saq:'#9a6a12','fill-in':'#5b6678'};
+let sb=null, rows=[];
+function cfg(){return {url:localStorage.getItem('sb_url'),key:localStorage.getItem('sb_key')};}
+function saveCfg(){const u=document.getElementById('url').value.trim()||'https://dbfqnbpushfzgvpdacvd.supabase.co';
+  const k=document.getElementById('key').value.trim();
+  if(!k){document.getElementById('setuperr').textContent='Paste the anon key.';return;}
+  localStorage.setItem('sb_url',u);localStorage.setItem('sb_key',k);location.reload();}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+async function init(){
+  const {url,key}=cfg();
+  if(!url||!key){document.getElementById('setup').style.display='block';document.getElementById('loading').style.display='none';return;}
+  sb=supabase.createClient(url,key);
+  const {data,error}=await sb.from('content_items').select('*').order('seq');
+  if(error){document.getElementById('loading').innerHTML='<span class="err">DB error: '+esc(error.message)+'. Check the key/table, or re-enter below.</span>';document.getElementById('setup').style.display='block';return;}
+  rows=data||[];
+  document.getElementById('loading').style.display='none';
+  document.getElementById('summary').style.display='block';
+  document.getElementById('livebadge').style.display='inline';
+  render();recount();
+  // realtime — live multi-user
+  sb.channel('ci').on('postgres_changes',{event:'UPDATE',schema:'public',table:'content_items'},p=>{
+    const r=rows.find(x=>x.id===p.new.id); if(r){r.status=p.new.status;
+      const sel=document.querySelector('select[data-id="'+r.id+'"]'); if(sel){sel.value=r.status;sel.closest('tr').setAttribute('data-st',r.status);} recount();}
+  }).subscribe();
+}
+function render(){
+  const units={};rows.forEach(r=>{(units[r.unit]=units[r.unit]||[]).push(r);});
+  let h='';
+  for(const u in units){
+    const rs=units[u];const band=rs[0].band||'';
+    const col=band.includes('A')?'#1f8a52':band.includes('B')?'#138079':band.includes('C')?'#33457e':'#5b6678';
+    // group by lesson
+    const lessons={};rs.forEach(r=>{(lessons[r.lesson||u]=lessons[r.lesson||u]||[]).push(r);});
+    let lh='';
+    for(const L in lessons){
+      const li=lessons[L];
+      let rowsH='';let lastPh='';
+      li.forEach(r=>{
+        if(r.phase!==lastPh){rowsH+='<tr class="phdr ph-'+esc(r.phase)+'"><td colspan="4">'+esc((r.phase||'').toUpperCase())+'</td></tr>';lastPh=r.phase;}
+        const tc=TYPE_COLOR[r.content_type]||'#5b6678';
+        rowsH+='<tr data-st="'+esc(r.status)+'"><td><span class="ty" style="background:'+tc+'">'+esc(r.content_type)+'</span></td>'
+          +'<td>'+esc(r.spec||'').slice(0,180)+'</td>'
+          +'<td>'+(r.substandard?'<span class="std">'+esc(r.substandard)+'</span>':'')+(r.difficulty?' <span style="color:#5b6678;font-size:10px">'+esc(r.difficulty)+'</span>':'')+'</td>'
+          +'<td><select class="st" data-id="'+esc(r.id)+'" onchange="setSt(this)">'
+          +['todo:To build','wip:WIP','built:Built','na:N/A'].map(o=>{const[v,t]=o.split(':');return '<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+t+'</option>';}).join('')
+          +'</select></td></tr>';
+      });
+      const done=li.filter(r=>r.status==='built').length;
+      lh+='<details class="lesson"><summary>'+esc(L)+'<span class="lprog">'+done+'/'+li.length+' built</span></summary><table>'+rowsH+'</table></details>';
+    }
+    h+='<section class="unit" data-band="'+esc(band)+'"><div class="uhead" style="border-left-color:'+col+'"><div>'
+      +'<span class="phase" style="color:'+col+'">Band '+esc(band)+'</span><h2>'+esc(u)+'</h2></div>'
+      +'<span class="uc">'+rs.length+' items</span></div>'+lh+'</section>';
+  }
+  document.getElementById('app').innerHTML=h;
+  document.getElementById('nUnits').textContent=Object.keys(units).length;
+  document.getElementById('nItems').textContent=rows.length;
+}
+async function setSt(sel){
+  const id=sel.dataset.id,v=sel.value;sel.closest('tr').setAttribute('data-st',v);
+  const r=rows.find(x=>x.id===id);if(r)r.status=v;recount();
+  const {error}=await sb.from('content_items').update({status:v}).eq('id',id);
+  if(error)alert('save failed: '+error.message);
+}
+function recount(){
+  let b=0,w=0,t=0,na=0;rows.forEach(r=>{r.status==='built'?b++:r.status==='wip'?w++:r.status==='na'?na++:t++;});
+  const tot=rows.length-na||1;
+  document.getElementById('b').style.width=(100*b/tot)+'%';document.getElementById('w').style.width=(100*w/tot)+'%';document.getElementById('t').style.width=(100*t/tot)+'%';
+  document.getElementById('pct').textContent=Math.round(100*b/tot)+'%';
+  // per-lesson counts
+  document.querySelectorAll('details.lesson').forEach(d=>{const done=d.querySelectorAll('tr[data-st="built"]').length;const tot=d.querySelectorAll('select.st').length;const lp=d.querySelector('.lprog');if(lp)lp.textContent=done+'/'+tot+' built';});
+}
+function filt(btn){document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  const f=btn.dataset.f;document.querySelectorAll('.unit').forEach(u=>u.style.display=(f==='all'||u.dataset.band===f)?'':'none');}
+document.getElementById('foot').textContent='Synced via Supabase · 675 artifacts across 10 expeditions · status is shared & live.';
+init();
+</script></body></html>
