@@ -21,7 +21,7 @@ footer{margin-top:26px;font-size:12px;color:var(--muted);border-top:1px solid va
 </style></head><body><div class="wrap">
 <div class="kicker">Incept Service · Grade-3 Reading generator</div>
 <h1>Generator I/O Schemas</h1>
-<p class="lede">The request envelope (one for all types) + the response schema for every item type <code>/grade3-reading/generate</code> produces. Grounded in the live InceptBench OpenAPI 3.1 (the runtime contract) plus this course's additive <code>pedagogy</code>/<code>scaffolds</code> extensions.</p>
+<p class="lede">The request envelope (one for all types) + the response schema for every item type <code>/grade3-reading/generate</code> produces. Grounded in the live InceptBench OpenAPI 3.1 (the runtime contract) plus this course's additive <code>pedagogy</code>/<code>scaffolds</code> (request) and <code>scaffold_content</code> (response) extensions.</p>
 <div class="nav"><a href="./">← build tracker</a></div>
 <div class="src"><b>Endpoint:</b> <code>POST /grade3-reading/generate</code> · model <code>gemini/gemini-3.5-flash</code> (reasoning=high) · response <code>{ "generated_content": [ … ] }</code>. Schemas are the InceptBench Zod contract (<code>benchmark.inceptbench.com/openapi.json</code>).</div>
 
@@ -58,5 +58,21 @@ footer{margin-top:26px;font-size:12px;color:var(--muted);border-top:1px solid va
       <h4>RESPONSE — one object in <code>generated_content[]</code></h4><table class=sch><tr><th>field</th><th>type</th><th>description</th></tr><tr><td><code>stimulus</code> <span class=req>*</span></td><td class=ty>string</td><td class=de>The shared reading passage. Required — EBSR evidence options are drawn from it.</td></tr><tr><td><code>part_a</code> <span class=req>*</span></td><td class=ty>object</td><td class=de></td></tr><tr><td><code>part_b</code> <span class=req>*</span></td><td class=ty>object</td><td class=de></td></tr><tr><td><code>image_url</code></td><td class=ty>array | null</td><td class=de>Image URLs attached to the content</td></tr><tr><td><code>additional_details</code></td><td class=ty>string | null</td><td class=de>Optional metadata string</td></tr></table></section><section class="card"><div class="ch"><span class="tt" style="background:#5b6678">fill-in</span>
       <span class="cd">cloze (available, unused in course)</span><code class="sn">FillInContent</code></div>
       <h4>RESPONSE — one object in <code>generated_content[]</code></h4><table class=sch><tr><th>field</th><th>type</th><th>description</th></tr><tr><td><code>stimulus</code></td><td class=ty>string</td><td class=de></td></tr><tr><td><code>question</code> <span class=req>*</span></td><td class=ty>string</td><td class=de></td></tr><tr><td><code>answer</code> <span class=req>*</span></td><td class=ty>array&lt;object&gt;</td><td class=de>One value per blank, in blank order</td></tr><tr><td><code>accepted_answers</code></td><td class=ty>array | null</td><td class=de>Optional 2D array of alternative full-answer combinations</td></tr><tr><td><code>answer_explanation</code></td><td class=ty>string | null</td><td class=de></td></tr><tr><td><code>image_url</code></td><td class=ty>array | null</td><td class=de>Image URLs attached to the content</td></tr><tr><td><code>additional_details</code></td><td class=ty>string | null</td><td class=de>Optional metadata string</td></tr></table></section>
+
+<section class="card" id="scaffold-out"><div class="ch"><span class="tt" style="background:#F4B740;color:#3a2c05">scaffold_content</span>
+<span class="cd">additive OUTPUT — how scaffolds come back (stock InceptBench response has only image_url)</span></div>
+<h4>RESPONSE add-on — present on practice items, omitted on scored (check/gate)</h4>
+<table class="sch">
+<tr><th>field</th><th>type</th><th>description → QTI target</th></tr>
+<tr><td><code>hint</code></td><td class=ty>string | null</td><td class=de>strategy nudge, never the answer → <code>qti-end-attempt-interaction</code></td></tr>
+<tr><td><code>glossary</code></td><td class=ty>array&lt;object&gt;</td><td class=de>Word-Assist entries <code>{term, definition, example}</code> → APIP keyword / <code>qti-companion</code></td></tr>
+<tr><td><code>worked_example</code></td><td class=ty>string | null</td><td class=de>the I-do model (i-do phase only) → companion/stimulus</td></tr>
+<tr><td><code>image</code></td><td class=ty>array&lt;string&gt;</td><td class=de>illustration URLs — the ONE scaffold the stock contract carries natively (<code>image_url</code>) → <code>&lt;img&gt;</code></td></tr>
+<tr><td><code>audio_text</code></td><td class=ty>string | null</td><td class=de>clean read-aloud text → TTS at render</td></tr>
+</table>
+<p style="font-size:12.5px;color:#5b6678;border-left:3px solid #F4B740;padding-left:12px;margin-top:10px">
+<b>Two layers:</b> scaffold <b>content</b> (above) is generated &amp; rides in the item/QTI. The fade <b>policy</b> (which scaffolds show per band, off-when-scored) is NOT in the item — it's a TimeBack runtime decision. Scored items (Day-3 check, gate) carry <b>no</b> scaffold_content (cold measure).</p>
+</section>
+
 <footer>Authoritative as of the live InceptBench OpenAPI (retrieved this session). Reading items pass the generated <code>article</code> as <code>stimulus</code> to the question types (two-stage generation). No free-response in scored items.</footer>
 </div></body></html>
